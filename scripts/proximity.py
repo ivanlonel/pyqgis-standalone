@@ -166,7 +166,10 @@ class Proximity(QgsProcessingAlgorithm):
         centroid = geometry.centroid()
         x = centroid.asPoint().x()
         y = centroid.asPoint().y()
-        proj_string = 'PROJ4:+proj=aeqd +ellps=WGS84 +lat_0={} +lon_0={} +x_0=0 +y_0=0'.format(y, x)
+        proj_string = (
+            f'PROJ4:+proj=aeqd +ellps=WGS84 +lat_0={y} +lon_0={x} +x_0=0 +y_0=0'
+        )
+
         dest_crs = QgsCoordinateReferenceSystem(proj_string)
         xform = QgsCoordinateTransform(self.source_crs, dest_crs, QgsProject.instance())
         geometry.transform(xform)
@@ -207,9 +210,9 @@ class Proximity(QgsProcessingAlgorithm):
         done = False
         iteration = 0
         feedback.setProgress(0)
-        while (distance > 0.0 and done == False):
+        while distance > 0.0 and not done:
             features = self.source.getFeatures()
-            for current, feature in enumerate(features):
+            for feature in features:
                 # Stop the algorithm if cancel button has been clicked
                 if feedback.isCanceled():
                     done = True
@@ -224,7 +227,7 @@ class Proximity(QgsProcessingAlgorithm):
 
         # Copy to features for distance is 0
         features = self.source.getFeatures()
-        for current, feature in enumerate(features):
+        for feature in features:
             sink.addFeature(self.processFeature(feature, 0), QgsFeatureSink.FastInsert)
 
         # Rasterize
